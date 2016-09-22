@@ -1,17 +1,18 @@
+
+
 '''
 ' Model based off of carpalx specifications
 '''
 
 from itertools import tee
 from collections import Counter
-from copy import deepcopy
 
-from layouts import COLEMAK, DVORAK, QWERTY, QEDPI, base_distance, my_keyboard as base
+from layouts import COLEMAK, DVORAK, QWERTY, base
 from utilities import dot_product, adj_triples, compound, normalize_alpha as normalize
 from model import e_weights, ws, wb, wp, p_weights, Pf, Pr, Ph
 
-layouts = [COLEMAK, DVORAK, QWERTY, QEDPI]  # default value
-layout = layouts[3]  # QEDPI
+layouts = [COLEMAK, DVORAK, QWERTY]  # default value
+layout = layouts[1]  # Dvorak
 
 
 # column of key -> right or left handed
@@ -35,8 +36,7 @@ keymap = {}
 
 for row, e in enumerate(layout):  # each char given row, col, travel dist, which hand
     for col, c in enumerate(e):
-        keymap[c] = {'row': row, 'col': col, 'base': base[row][col],
-                     'hand': get_hand(col), 'finger': get_finger(col)}
+        keymap[c] = {'row': row, 'col': col, 'base': base[row][col], 'hand': get_hand(col), 'finger': get_finger(col)}
 
 
 # -> Counter of triplet frequencies (also single and double letter words)
@@ -49,26 +49,16 @@ def tokenize_map(s):
 
 # eg: print(tokenize_map('lolol me'))
 
-'''
+
 def penalty(c):  # positional penalty for each character in a layout
     key = keymap[c]
-    penalties = [1, Ph[key['hand']], Pf[key['finger']], Pr[key['row'] + 1]]
+    penalties = [1, Ph[key['hand']], Pf[key['finger']], Pr[key['row']]]
     return dot_product(p_weights, penalties)
 
 # map each key to its penalty
 penalties = {}
 for key in keymap.keys():
-    penalties[key] = penalty(key) + keymap[key]['base']
-'''
-
-'''
-layout_pen = deepcopy(layout)
-for r in range(len(layout)):
-    for c in range(len(layout[r])):
-        layout_pen[r][c] = penalties[layout[r][c]]
-
-print(*layout_pen, sep='\n')'''
-
+    penalties[key] = penalty(key)
 
 def path(triad):
 
@@ -132,25 +122,44 @@ def path(triad):
     return [ph([k['hand'] for k in keys]), pr([k['row'] for k in keys]), pf([k['finger'] for k in keys], triad)]
 
 
-def ease_triad(triad):
-    bs = [keymap[triad[i]]['base'] * wb[i] / 10 for i in range(len(triad))]
-    # ps = [penalties[c] for c in triad]
+def ease(triad):
+    bs = [keymap[triad[i]]['base'] * wb[i] for i in range(len(triad))]
+    ps = [penalties[c] for c in triad]
     ss = path(triad)
-    print(triad + ' ---------------------------')
-    print('stroke path: ' + str(ss))
-    # commented out, compound(ps, wp)
-    components = [dot_product(bs, wb), dot_product(ss, ws)]
-    print('total: %.2f' % sum(components))
-    print('base: %.2f, path: %.2f' % (components[0], components[1]))
-    return sum(components[:1])
+
+    print(ss)
+    components = [compound(bs, wb), compound(ps, wp), dot_product(ss, ws)]
+    return components
 
 
-def ease_word(w):
-    total = 0
-    for triad in adj_triples(w):
-        total += ease_triad(triad)
-        print(triad)
-    return round(total / (len(w) - 2), 2)
+
+print(ease('xpk'))
 
 
-print(ease_word('dazz'))
+from operator import mul
+
+
+def dot_product(xs, ys):
+    return sum(map(mul, xs, ys))
+
+
+# eg: print(*adj_triples('fish'))
+def adj_triples(s):
+    yield from map(lambda i: s[i:i+3], range(len(s) - 3 + 1))
+
+
+# consider only alpha characters and spaces
+def normalize_alpha(s):
+    return ''.join([c for c in s.lower() if c.isalpha() or c == ' '])
+
+
+# x1 (1 + x2(1 + x3...
+def compound(xs, ws):
+    res = 1
+    for i in reversed(range(len(xs))):
+        res *= xs[i] * ws[i]
+        res += 1
+        #print(res)
+    return res - 1
+
+    

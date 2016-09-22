@@ -1,3 +1,7 @@
+# Pycharm
+.idea
+__pycache__
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
@@ -45,3 +49,4 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+.idea/workspace.xml

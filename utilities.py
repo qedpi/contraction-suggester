@@ -13,3 +13,13 @@ def adj_triples(s):
 # consider only alpha characters and spaces
 def normalize_alpha(s):
     return ''.join([c for c in s.lower() if c.isalpha() or c == ' '])
+
+
+# x1 (1 + x2(1 + x3...
+def compound(xs, ws):
+    res = 1
+    for i in reversed(range(len(xs))):
+        res *= xs[i] * ws[i]
+        res += 1
+        #print(res)
+    return res - 1
