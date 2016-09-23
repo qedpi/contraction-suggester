@@ -16,7 +16,8 @@ layout = layouts[3]  # QEDPI
 
 # column of key -> right or left handed
 def get_hand(col):
-    return 'R' if col > 4 else 'L'
+    pivot = 4
+    return 'R' if col > pivot else 'L'
 
 
 # column of key -> finger id: left pinkie, ring, middle, index, right index, middle, ring, pinkie
@@ -36,7 +37,7 @@ keymap = {}
 for row, e in enumerate(layout):  # each char given row, col, travel dist, which hand
     for col, c in enumerate(e):
         keymap[c] = {'row': row, 'col': col, 'base': base[row][col],
-                     'hand': get_hand(col), 'finger': get_finger(col)}
+                     'hand': get_hand(row), 'finger': get_finger(col)}
 
 
 # -> Counter of triplet frequencies (also single and double letter words)
@@ -133,24 +134,36 @@ def path(triad):
 
 
 def ease_triad(triad):
-    bs = [keymap[triad[i]]['base'] * wb[i] / 10 for i in range(len(triad))]
+    #bs = [keymap[triad[i]]['base'] * wb[i] / 10 for i in range(len(triad))]
     # ps = [penalties[c] for c in triad]
     ss = path(triad)
-    print(triad + ' ---------------------------')
-    print('stroke path: ' + str(ss))
-    # commented out, compound(ps, wp)
-    components = [dot_product(bs, wb), dot_product(ss, ws)]
-    print('total: %.2f' % sum(components))
-    print('base: %.2f, path: %.2f' % (components[0], components[1]))
-    return sum(components[:1])
+    #print(triad + ' ---------------------------')
+    #print('stroke path: ' + str(ss))
+    # commented out, compound(ps, wp), dot_product(bs, wb)
+    components = dot_product(ss, ws)
+    #print('penalty: %.2f' % components)
+    return 0
 
 
 def ease_word(w):
+    base_total = 0
     total = 0
+
+    freqs = Counter(w)
+    for c in freqs:
+        base_total += keymap[c]['base'] * freqs[c]
+
     for triad in adj_triples(w):
         total += ease_triad(triad)
-        print(triad)
-    return round(total / (len(w) - 2), 2)
+        #print(triad)
+
+    total += base_total / len(w)
+
+    return round(total, 2)
 
 
-print(ease_word('dazz'))
+with open('big.txt') as text:
+    comb = ''.join([t for t in text])
+    print(ease_word(normalize(comb)))
+
+#print(ease_word('fiddle'))

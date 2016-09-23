@@ -11,8 +11,12 @@ def adj_triples(s):
 
 
 # consider only alpha characters and spaces
-def normalize_alpha(s):
+def normalize_alpha_space(s):
     return ''.join([c for c in s.lower() if c.isalpha() or c == ' '])
+
+
+def normalize_alpha(s):
+    return ''.join([c for c in s.lower() if c.isalpha()])
 
 
 # x1 (1 + x2(1 + x3...

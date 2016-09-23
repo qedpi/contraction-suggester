@@ -1,9 +1,9 @@
 from collections import Counter
 #import matplotlib.pyplot as plt
 
-files = ['python_collections.txt', 'contraction-suggester.txt']
+files = ['python_collections.txt', 'contraction-suggester.txt', 'big.txt']
 
-with open(files[1], 'r') as text:
+with open(files[2], 'r') as text:
     lines = []
     for line in text:
         lines.append(line)
@@ -18,5 +18,4 @@ with open(files[1], 'r') as text:
     #print(freq)
 
     for f, x in freq:
-        print(x, '#' * (f // (n // 1600)))
-
+        print(x, '#' * (f // (n // 1600)))eaeaeaeaeae
