@@ -161,9 +161,56 @@ def ease_word(w):
 
     return round(total, 2)
 
-
+'''
 with open('big.txt') as text:
     comb = ''.join([t for t in text])
     print(ease_word(normalize(comb)))
+'''
 
-#print(ease_word('fiddle'))
+import csv
+with open('frequency_data_cleaned.csv', 'r') as file:
+    #reader = csv.DictReader(file)
+    reader = csv.reader(file)
+    words = []
+    for r in reader:
+        words += [(r[0].strip(), int(r[1]))]
+    #print(words)
+    total_count = sum([w[1] for w in words])
+    print(total_count)
+    words = [(w[0], round(100 * w[1]/total_count, 4)) for w in words]
+
+    def buf(w, n):
+        w = str(w)
+        return w + ' ' * (n - len(w))
+
+    savings = []
+    for word in words:
+        w = word[0].lower()
+        e = ease_word(w)
+        saving = word[1] * (e/10 + 10) * (len(w) - 1)
+        #print(buf(w, 20), buf(e, 8), buf(round(e * len(w), 2), 8), saving)
+        savings += [(round(saving, 2), w)]
+
+    savings.sort(reverse=True)
+    for i, s in enumerate(savings):
+        print(i+1, s)
+    #print(*savings[:], sep='\n')
+
+    contracts = ["t n h b f ta w fo u in "
+                 "o ty fr ti ta te sa wu o bu "  # to repeated
+                 "it ab p wa hs n't ot tr tnk sh "
+                 "kn d wi he bc cu mk wy on yr "
+                 "tm ur oth j thru wh ge smt sm ca "
+                 "wn em tes tk fst nt cm er we l "
+                 "gov by li at tn shu tg mo bt sk "
+                 "thn stu lo unt one amer tos or al cte "
+                 "ath wom ut dt re chi qu pb fam him "
+                 "bec af g info fi wir comp c as v "    # 100
+                 "mo el tr na prog gv ag mn ol hr "  # mo - more repeated
+                 "st gu poc tl ba imp nati com ust ou "
+                 "ho bis en e bv lf prez m mil ne "  # if as e
+                 "two sta its sy dw wo wae three dur wor "  # way as wae
+                 "gp le ert num da cl inati aw prov devt "
+                 "wie ov gra bef edu relp hap ey bei ser "
+                 "fe cont ew exp up hoe ue la inci nyt "
+                 ""]
